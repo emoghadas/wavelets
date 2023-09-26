@@ -2,7 +2,6 @@
 # %%
 import numpy as np
 import al
-from fast_map import fast_map
 
 def Sigma(G,G2_ud,beta,U):
    """
@@ -12,42 +11,39 @@ def Sigma(G,G2_ud,beta,U):
    inverse temperature beta,
    and Hubbard interaction U
    """
+
+   # dimensions
    Niv, Nivp, Niw = G2_ud.shape
    niv, = G.shape
-   assert Niv == Nivp
+   assert Niv == Nivp, "Fermionic frequencies nu, nu' must be same length"
    mid = niv//2
-   iv_slice = np.arange(mid-Niv//2,mid+Niv//2)
-   iw_slice = np.arange(-Niw//2+1,Niw//2+1)
-   iv_range = np.arange(Niv)
-   iw_range = np.arange(Niw)
+   iv_slice = slice(mid-Niv//2,mid+Niv//2)
    iv = 1j*(2*np.arange(-niv//2,niv//2)+1)*np.pi/beta
 
+   # hartree term
    n = np.sum(G-1/iv)/beta + 0.5
-
    Σ = np.zeros((Niv),dtype=complex)
    Σ += U*n
    
-   temp = np.einsum('ijw, i -> i', G2_ud, 1/G)
+   # vertex part of SDE
+   temp = np.einsum('ijw, i -> i', G2_ud, 1/G[iv_slice])
    Σ += U/beta**2 * temp
-   """
-   for ω,w in zip(iw_range,iw_slice):
-      for i,v in zip(iv_range,iv_slice):
-         for j,vp in zip(iv_range,iv_slice):
-            Σ[i] += U/beta**2 * G2_ud[i,j,ω]/G[v]
-   """
+
    return Σ
 
 # %%
 if __name__ == "__main__":
+
    #test
    import matplotlib.pyplot as plt
+
    #parameters 
    U, beta, µ = 1, 100, 1/2 +0.2
-   atom = al.atom(U,beta,µ,Niwf=300)
+   atom = al.atom(U,beta,µ,Niwf=100)
 
    # for the Green's function more Matsubara 
    # frequencies are needed
-   at_more_fq = al.atom(U,beta,µ,Niwf=300)
+   at_more_fq = al.atom(U,beta,µ,Niwf=500)
    g = at_more_fq.g()
 
    # bosonic Matsubara frequencies
@@ -56,9 +52,9 @@ if __name__ == "__main__":
    v = np.imag(atom.iw())
 
    # g2_ud : iv, iv', iO
-   #g2_ud = np.moveaxis(np.array([atom.g2ud(omega=io) for io in iO]),0,-1)
-   g2_ud = np.moveaxis(np.array(list(fast_map(atom.g2ud, iO, threads_limit=100))),0,-1)
+   g2_ud = np.moveaxis(np.array([atom.g2ud(omega=io) for io in iO]),0,-1)
 
+   # SDE 
    Σ = Sigma(g,g2_ud,beta,U)
 
    # exact selfenergy
