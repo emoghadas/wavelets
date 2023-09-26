@@ -1,0 +1,19 @@
+name: wave_sus
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - numpy
+  - matplotlib=3.3.4
+  - pywavelets
+  - scipy
+  - pip  
+  - seaborn
+  - pandas=1.1.5
+  - scikit-image
+  - ipykernel
+  - jupyterlab
+  - pip:
+      - scienceplots
