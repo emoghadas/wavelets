@@ -1,0 +1,19 @@
+name: waves
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - numpy
+  - matplotlib
+  - pywavelets
+  - scipy
+  - pip  
+  - seaborn
+  - pandas
+  - scikit-image
+  - ipykernel
+  - jupyterlab
+  - pip:
+      - scienceplots
